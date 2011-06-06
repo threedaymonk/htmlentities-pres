@@ -1,0 +1,34 @@
+HTMLEntities
+
+gem install HTMLEntities
+
+----
+
+require "htmlentities"
+h = HTMLEntities.new(:xhtml1)
+>
+h.decode("&#9731;")
+># => "☃"
+>
+h.decode("&#x2603;")
+># => "☃"
+>
+h.decode("&amp;")
+># => "&"
+>
+h.decode("&ocirc;")
+># => "ô"
+
+----
+
+h.encode("&ô☃", :basic)
+># => "&amp;ô☃"
+>
+h.encode("&ô☃", :named)
+># => "&amp;&ocirc;☃"
+>
+h.encode("&ô☃", :hexadecimal)
+># => "&#x26;&#xf4;&#x2603;"
+>
+h.encode("&ô☃", :named, :decimal)
+># => "&amp;&ocirc;&#9731;"
