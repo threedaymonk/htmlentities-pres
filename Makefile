@@ -1,8 +1,11 @@
-.PHONY: all vendor
+.PHONY: all vendor dirs
 
 all: vendor data.js
 
-vendor: data.js vendor/sh_main.min.js vendor/sh_ruby.min.js vendor/sh_the.min.css vendor/jquery.min.js
+vendor: dirs data.js vendor/sh_main.min.js vendor/sh_ruby.min.js vendor/jquery.min.js
+
+dirs:
+	mkdir -p vendor
 
 vendor/sh_main.min.js:
 	curl -o vendor/sh_main.min.js http://shjs.sourceforge.net/sh_main.min.js
