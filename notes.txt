@@ -1,0 +1,119 @@
+HTMLEntities
+
+Maintained since August 2005.
+
+What it does: convert entities to their Unicode equivalents, and back again.
+
+Simple, common job, but not part of standard library. cgi.rb does a few, but not the full range available in HTML.
+
+Dependency of a few notable libraries:
+
+cmess (7,581)
+Assist with handling messed up encodings (Currently includes the
+following tools: bconv, cinderella, decode_entities, guess_encoding)
+
+murlsh (7,234)
+Host your bookmarks or maintain a link blog
+
+premailer (7,134)
+Improve the rendering of HTML emails by making CSS inline, converting links and warning about unsupported code.
+
+rfeedreader (10,652)
+Feed parser to read feed and return first posts of this feed. Special parsing from sources like Flickr, Jumcut, Google video, ...
+
+wukong (13,598)
+  Treat your dataset like a:
+
+      * stream of lines when it's efficient to process by lines
+      * stream of field arrays when it's efficient to deal directly with fields
+      * stream of lightweight objects when it's efficient to deal with objects
+
+  Wukong is friends with Hadoop the elephant, Pig the query language, and the cat on your command line.
+
+Quite useful to our buccaneering friends:
+
+autonzb (873)
+Ruby tool to automatically download x264 HD nzb movies files from newzleech.com & nzbs.org
+
+imdb_og (2,523)
+Simple library to look up movies on IMDB
+
+movie-renamer (4,210)
+rename movies in a folder
+
+About 160,000 downloads, so it's obviously saving quite a lot of wasted effort and repeated bugs.
+
+Bugs? Yes, even though it's really simple, it turns out that I'm a moron.
+
+Decoding loop from version 2.1:
+
+    def decode_entities
+      return gsub(HTMLEntities::NAMED_ENTITY_REGEXP) { 
+        HTMLEntities::MAP.has_key?($1) ? [HTMLEntities::MAP[$1]].pack('U') : $& 
+      }.gsub(/&#([0-9]{2,10});/) { 
+        [$1.to_i].pack('U') 
+      }.gsub(/&#x([0-9a-e]{2,8});/i) { 
+        [$1.to_i(16)].pack('U') 
+      }
+    end
+
+Apparently, I suck at hex. Fixed 7 days later after a bug report and patch.
+
+Up until 4.2.4, decoding was performed over multiple passes, which caused errors with certain combinations of multiple-escaped entities.
+
+Even though it's 6 years old, and simple, it still manages to be buggy. Writing reliable software is hard.
+
+Do one thing and do it well -> do one thing and keep trying until you can do it adequately. Keep adding tests every time something goes wrong.
+
+Here's what decoding looks like now:
+
+    def decode(source)
+      prepare(source).gsub(@entity_regexp) {
+        if $1 && codepoint = @map[$1]
+          [codepoint].pack('U')
+        elsif $2
+          [$2.to_i(10)].pack('U')
+        elsif $3
+          [$3.to_i(16)].pack('U')
+        else
+          $&
+        end
+      }
+    end
+
+Prepare method turns input into UTF-8 string. Depends on 1.8/1.9, so define at load time.
+
+In 1.9 important to have consistent encoding. In 1.8, it's up to the programmer.
+
+if "1.9".respond_to?(:encoding)
+  def prepare(string) #:nodoc:
+    string.to_s.encode(Encoding::UTF_8)
+  end
+else
+  def prepare(string) #:nodoc:
+    string.to_s
+  end
+end
+
+@entity regexp is constructed at initialisation as a one-off cost.
+
+def entity_regexp
+  key_lengths = @map.keys.map{ |k| k.length }
+  entity_name_pattern =
+    if @flavor == 'expanded'
+      '(?:b\.)?[a-z][a-z0-9]'
+    else
+      '[a-z][a-z0-9]'
+    end
+  /&(?:(#{entity_name_pattern}{#{key_lengths.min - 1},#{key_lengths.max - 1}})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
+end
+
+Which becomes something like:
+
+/&(?:([a-z][a-z0-9]{1,7})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
+
+
+Testing and benchmarking:
+
+* Use RVM to run over multiple interpreters: `rvm all rake …`
+* Warm up before measuring (JRuby)

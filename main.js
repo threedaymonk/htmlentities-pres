@@ -13,9 +13,17 @@ $(document).ready(function(){
     content.css('font-size', k * h / 20 + 'px');
   };
 
+  var centerContent = function() {
+    content.css('position', 'absolute').
+            css('left', (($(window).width()  / 2) - (content.width()  / 2)) + 'px').
+            css('top',  (($(window).height() / 2) - (content.height() / 2)) + "px");
+  };
+
   var showPage = function(){
-    content.text(pages[pageIndex]);
+    content.text(pages[pageIndex].page);
+    content.css(pages[pageIndex].mode);
     sh_highlightDocument();
+    centerContent();
     window.location.hash = '#' + (pageIndex + 1)
   };
 
