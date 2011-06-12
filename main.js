@@ -10,7 +10,8 @@ $(document).ready(function(){
     var fontSize = parseFloat(content.css('font-size'));
     var k = fontSize / lineHeight;
 
-    content.css('font-size', k * h / 20 + 'px');
+    content.css('font-size', k * h / 24 + 'px');
+    centerContent();
   };
 
   var centerContent = function() {
@@ -21,7 +22,7 @@ $(document).ready(function(){
 
   var showPage = function(){
     content.text(pages[pageIndex].page);
-    content.css(pages[pageIndex].mode);
+    content.attr('class', pages[pageIndex].mode);
     sh_highlightDocument();
     centerContent();
     window.location.hash = '#' + (pageIndex + 1)

@@ -1,6 +1,12 @@
 HTMLEntities
 
-gem install HTMLEntities
+gem install htmlentities
+
+----
+
+== 1.0 (2005-08-03)
+* Initial release.
+* Decoding only.
 
 ----
 
@@ -9,17 +15,13 @@ gem install HTMLEntities
 require "htmlentities"
 h = HTMLEntities.new(:xhtml1)
 
-h.decode("&#9731;")
-# => "☃"
+h.decode("&#9731;")  # => "☃"
 
-h.decode("&#x2603;")
-# => "☃"
+h.decode("&#x2603;") # => "☃"
 
-h.decode("&amp;")
-# => "&"
+h.decode("&amp;")    # => "&"
 
-h.decode("&ocirc;")
-# => "ô"
+h.decode("&ocirc;")  # => "ô"
 
 ----
 
@@ -36,6 +38,47 @@ h.encode("&ô☃", :hexadecimal)
 
 h.encode("&ô☃", :named, :decimal)
 # => "&amp;&ocirc;&#9731;"
+
+----
+
+cmess (7,581)
+
+Assist with handling messed up encodings (Currently includes the following tools: bconv, cinderella, decode_entities, guess_encoding)
+
+----
+
+murlsh (7,234)
+
+Host your bookmarks or maintain a link blog
+
+----
+
+premailer (7,134)
+
+Improve the rendering of HTML emails by making CSS inline, converting links and warning about unsupported code.
+
+----
+
+rfeedreader (10,652)
+
+Feed parser to read feed and return first posts of this feed. Special parsing from sources like Flickr, Jumcut, Google video, ...
+
+----
+
+wukong (13,598)
+
+Treat your dataset like a:
+
+* stream of lines when it's efficient to process by lines
+* stream of field arrays when it's efficient to deal directly with fields
+* stream of lightweight objects when it's efficient to deal with objects
+
+Wukong is friends with Hadoop the elephant, Pig the query language, and the cat on your command line.
+
+----
+
+162,858 total downloads  
+ 26,849 for this version
 
 ----
 
@@ -96,8 +139,7 @@ def entity_regexp
     else
       '[a-z][a-z0-9]'
     end
-  /&(?:(#{entity_name_pattern}{#{key_lengths.min - 1},#{key_lengths.max - 1}})
-  |#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
+  /&(?:(#{entity_name_pattern}{#{key_lengths.min - 1},#{key_lengths.max - 1}})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
 end
 
 ----
@@ -120,3 +162,46 @@ def decode(source)
   }
 end
 
+----
+
+rvm all rake test
+
+rvm all rake benchmark
+
+----
+
+ruby 1.9.2p180 (2011-02-18 revision 30909) [x86_64-linux]
+Encoding  6.620000   0.010000   6.630000 (  6.636774)
+Decoding  2.660000   0.000000   2.660000 (  2.662709)
+
+ruby 1.8.7 (2011-02-18 patchlevel 334) [x86_64-linux]
+Encoding 10.660000   0.070000  10.730000 ( 10.764171)
+Decoding  4.270000   0.020000   4.290000 (  4.293326)
+
+jruby 1.6.2 (ruby-1.8.7-p330) (2011-05-23 e2ea975)
+(OpenJDK 64-Bit Server VM 1.6.0_22) [linux-amd64-java]
+Encoding  5.090000   0.000000   5.090000 (  5.090000)
+Decoding  1.763000   0.000000   1.763000 (  1.763000)
+
+----
+
+"It would be nice, however, if the decode function had a way to ignore certain common codes. For example, let's say you wanted to decode everything except the ampersand code (&amp;)."
+
+----
+
+"First of all I would like to thank you for this awesome gem. But I found a bug while trying to sanitize a string that has both valid and invalid chars."
+
+----
+
+[[ruby]]
+
+coder = HTMLEntities.new
+string = "> Car &amp; Bike <"
+new = coder.encode(string)
+# BUG =>  "&gt; Car &amp;amp; Bike &lt;"
+worst_then_new = coder.encode(new)
+# BUG => "&amp;gt; Car &amp;amp;amp; Bike &amp;lt;"
+
+----
+
+"On two occasions I have been asked, 'Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?' I am not able rightly to apprehend the kind of confusion of ideas that could provoke such a question."

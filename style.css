@@ -8,8 +8,9 @@ pre {
 }
 
 pre {
+  white-space: pre-wrap;
+  width: 60ex;
   line-height: 1.2em;
   color: black;
   font-size: 28px;
-  font-weight: bold;
 }

@@ -45,7 +45,7 @@ About 160,000 downloads, so it's obviously saving quite a lot of wasted effort a
 
 Bugs? Yes, even though it's really simple, it turns out that I'm a moron.
 
-Decoding loop from version 2.1:
+Decoding loop from version 2.1 (Oct 2005):
 
     def decode_entities
       return gsub(HTMLEntities::NAMED_ENTITY_REGEXP) { 
@@ -59,7 +59,7 @@ Decoding loop from version 2.1:
 
 Apparently, I suck at hex. Fixed 7 days later after a bug report and patch.
 
-Up until 4.2.4, decoding was performed over multiple passes, which caused errors with certain combinations of multiple-escaped entities.
+Up until 4.2.4 (Jan 2011), decoding was performed over multiple passes, which caused errors with certain combinations of multiple-escaped entities.
 
 Even though it's 6 years old, and simple, it still manages to be buggy. Writing reliable software is hard.
 
@@ -112,8 +112,35 @@ Which becomes something like:
 
 /&(?:([a-z][a-z0-9]{1,7})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
 
-
 Testing and benchmarking:
 
 * Use RVM to run over multiple interpreters: `rvm all rake …`
 * Warm up before measuring (JRuby)
+
+Encode & decode 34kb file of random codepoints 100 times
+
+Resist expansion!
+
+"It would be nice, however, if the decode function had a way
+to ignore certain common codes. For example, let's say you
+wanted to decode everything except the ampersand code (&amp;)."
+
+A reasonable if unusual requirement. Showed a solution.
+
+"First of all I would like to thank you for this awesome gem.
+But I found a bug while trying to sanitize a string that has
+both valid and invalid chars."
+
+coder = HTMLEntities.new
+string = "> Car &amp; Bike <"
+new = coder.encode(string)  # BUG =>  "&gt; Car &amp;amp; Bike &lt;"
+worst_then_new = coder.encode(new) # BUG => "&amp;gt; Car &amp;amp;amp; Bike &amp;lt;"
+
+NOTABUG
+
+“On two occasions I have been asked, 'Pray, Mr. Babbage, if
+you put into the machine wrong figures, will the right
+answers come out?' I am not able rightly to apprehend the
+kind of confusion of ideas that could provoke such a
+question.”
+
