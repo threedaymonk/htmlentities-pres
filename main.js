@@ -28,8 +28,8 @@ $(document).ready(function(){
     window.location.hash = '#' + (pageIndex + 1)
   };
 
-  var movePage = function(d){
-    pageIndex = Math.max(0, Math.min(pages.length - 1, pageIndex + d));
+  var movePage = function(p){
+    pageIndex = Math.max(0, Math.min(pages.length - 1, p));
     showPage();
   };
 
@@ -37,11 +37,17 @@ $(document).ready(function(){
     switch (ev.which) {
       case 37: // left
       case  8: // backspace
-        movePage(-1);
+        movePage(pageIndex - 1);
         break;
       case 39: // right
       case 32: // space
-        movePage(+1);
+        movePage(pageIndex + 1);
+        break;
+      case 36: // home
+        movePage(0);
+        break;
+      case 35: // end
+        movePage(pages.length - 1);
         break;
     }
   };
