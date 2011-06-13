@@ -1,207 +1,363 @@
-HTMLEntities
+    HTMLEntities
 
-gem install htmlentities
-
-----
-
-== 1.0 (2005-08-03)
-* Initial release.
-* Decoding only.
+    gem install htmlentities
 
 ----
 
-[[ruby]]
+Maintained since August 2005.
 
-require "htmlentities"
-h = HTMLEntities.new(:xhtml1)
-
-h.decode("&#9731;")  # => "☃"
-
-h.decode("&#x2603;") # => "☃"
-
-h.decode("&amp;")    # => "&"
-
-h.decode("&ocirc;")  # => "ô"
+    == 1.0 (2005-08-03)
+    * Initial release.
+    * Decoding only.
 
 ----
 
-[[ruby]]
+What it does: convert entities to their Unicode equivalents, and back again.
 
-h.encode("&ô☃", :basic)
-# => "&amp;ô☃"
+    [[ruby]]
 
-h.encode("&ô☃", :named)
-# => "&amp;&ocirc;☃"
+    require "htmlentities"
+    h = HTMLEntities.new(:xhtml1)
 
-h.encode("&ô☃", :hexadecimal)
-# => "&#x26;&#xf4;&#x2603;"
+    h.decode("&#9731;")  # => "☃"
 
-h.encode("&ô☃", :named, :decimal)
-# => "&amp;&ocirc;&#9731;"
+    h.decode("&#x2603;") # => "☃"
 
-----
+    h.decode("&amp;")    # => "&"
 
-cmess (7,581)
-
-Assist with handling messed up encodings (Currently includes the following tools: bconv, cinderella, decode_entities, guess_encoding)
+    h.decode("&ocirc;")  # => "ô"
 
 ----
 
-murlsh (7,234)
+    [[ruby]]
 
-Host your bookmarks or maintain a link blog
+    h.encode("&ô☃", :basic)
+    # => "&amp;ô☃"
 
-----
+    h.encode("&ô☃", :named)
+    # => "&amp;&ocirc;☃"
 
-premailer (7,134)
+    h.encode("&ô☃", :hexadecimal)
+    # => "&#x26;&#xf4;&#x2603;"
 
-Improve the rendering of HTML emails by making CSS inline, converting links and warning about unsupported code.
-
-----
-
-rfeedreader (10,652)
-
-Feed parser to read feed and return first posts of this feed. Special parsing from sources like Flickr, Jumcut, Google video, ...
+    h.encode("&ô☃", :named, :decimal)
+    # => "&amp;&ocirc;&#9731;"
 
 ----
 
-wukong (13,598)
+Simple, common job, but not part of standard library. cgi.rb does a few, but not the full range available in HTML.
 
-Treat your dataset like a:
+Dependency of a few notable libraries:
 
-* stream of lines when it's efficient to process by lines
-* stream of field arrays when it's efficient to deal directly with fields
-* stream of lightweight objects when it's efficient to deal with objects
+    cmess (7,581)
 
-Wukong is friends with Hadoop the elephant, Pig the query language, and the cat on your command line.
+    Assist with handling messed up encodings (Currently includes the following tools: bconv, cinderella, decode_entities, guess_encoding)
 
 ----
 
-162,858 total downloads  
- 26,849 for this version
+    murlsh (7,234)
+
+    Host your bookmarks or maintain a link blog
 
 ----
 
-[[ruby]]
+    premailer (7,134)
 
-def decode_entities
-  return gsub(HTMLEntities::NAMED_ENTITY_REGEXP) { 
-    HTMLEntities::MAP.has_key?($1) ?
-      [HTMLEntities::MAP[$1]].pack('U') : $& 
-  }.gsub(/&#([0-9]{2,10});/) { 
-    [$1.to_i].pack('U') 
-  }.gsub(/&#x([0-9a-e]{2,8});/i) { 
-    [$1.to_i(16)].pack('U') 
-  }
-end
+    Improve the rendering of HTML emails by making CSS inline, converting links and warning about unsupported code.
 
 ----
 
-[[ruby]]
+    rfeedreader (10,652)
 
-def decode(source)
-  prepare(source).gsub(@entity_regexp) {
-    if $1 && codepoint = @map[$1]
-      [codepoint].pack('U')
-    elsif $2
-      [$2.to_i(10)].pack('U')
-    elsif $3
-      [$3.to_i(16)].pack('U')
-    else
-      $&
+    Feed parser to read feed and return first posts of this feed. Special parsing from sources like Flickr, Jumcut, Google video, ...
+
+----
+
+    wukong (13,598)
+
+    Treat your dataset like a:
+
+    * stream of lines when it's efficient to process by lines
+    * stream of field arrays when it's efficient to deal directly with fields
+    * stream of lightweight objects when it's efficient to deal with objects
+
+    Wukong is friends with Hadoop the elephant, Pig the query language, and the cat on your command line.
+
+----
+
+Quite useful to our buccaneering friends:
+
+    autonzb (873)
+    Ruby tool to automatically download x264 HD nzb movies files from newzleech.com & nzbs.org
+
+----
+
+About 160,000 downloads, so it's obviously saving quite a lot of wasted effort and repeated bugs.
+
+    162,858 total downloads  
+     26,849 for this version
+
+Bugs? Yes, even though it's really simple, it turns out that I'm a moron.
+
+----
+
+Decoding loop from version 2.1 (Oct 2005):
+
+    [[ruby]]
+
+    def decode_entities
+      return gsub(HTMLEntities::NAMED_ENTITY_REGEXP) { 
+        HTMLEntities::MAP.has_key?($1) ?
+          [HTMLEntities::MAP[$1]].pack('U') : $& 
+      }.gsub(/&#([0-9]{2,10});/) { 
+        [$1.to_i].pack('U') 
+      }.gsub(/&#x([0-9a-e]{2,8});/i) { 
+        [$1.to_i(16)].pack('U') 
+      }
     end
-  }
-end
+
+Apparently, I suck at hex. Fixed 7 days later after a bug report and patch.
+
+Up until 4.2.4 (Jan 2011), decoding was performed over multiple passes, which caused errors with certain combinations of multiple-escaped entities.
+
+Even though it's 6 years old, and simple, it still manages to be buggy. Writing reliable software is hard.
+
+Do one thing and do it well -> do one thing and keep trying until you can do it adequately. Keep adding tests every time something goes wrong.
 
 ----
 
-[[ruby]]
+Here's what decoding looks like now. Decoder class instantiated for each conversion. Main method is decode:
 
-if "1.9".respond_to?(:encoding)
-  def prepare(string) #:nodoc:
-    string.to_s.encode(Encoding::UTF_8)
-  end
-else
-  def prepare(string) #:nodoc:
-    string.to_s
-  end
-end
+    [[ruby]]
 
-----
-
-[[ruby]]
-
-def entity_regexp
-  key_lengths = @map.keys.map{ |k| k.length }
-  entity_name_pattern =
-    if @flavor == 'expanded'
-      '(?:b\.)?[a-z][a-z0-9]'
-    else
-      '[a-z][a-z0-9]'
+    def decode(source)
+      prepare(source).gsub(@entity_regexp) {
+        if $1 && codepoint = @map[$1]
+          [codepoint].pack('U')
+        elsif $2
+          [$2.to_i(10)].pack('U')
+        elsif $3
+          [$3.to_i(16)].pack('U')
+        else
+          $&
+        end
+      }
     end
-  /&(?:(#{entity_name_pattern}{#{key_lengths.min - 1},#{key_lengths.max - 1}})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
-end
 
 ----
 
-[[ruby]]
+Prepare method turns input into UTF-8 string. Depends on 1.8/1.9, so define at load time.
 
-/&(?:([a-z][a-z0-9]{1,7})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
+In 1.9 important to have consistent encoding. In 1.8, it's up to the programmer.
 
-def decode(source)
-  prepare(source).gsub(@entity_regexp) {
-    if $1 && codepoint = @map[$1]
-      [codepoint].pack('U')
-    elsif $2
-      [$2.to_i(10)].pack('U')
-    elsif $3
-      [$3.to_i(16)].pack('U')
+    [[ruby]]
+
+    if "1.9".respond_to?(:encoding)
+      def prepare(string) #:nodoc:
+        string.to_s.encode(Encoding::UTF_8)
+      end
     else
-      $&
+      def prepare(string) #:nodoc:
+        string.to_s
+      end
     end
-  }
-end
 
 ----
 
-rvm all rake test
+@entity regexp is constructed at initialisation as a one-off cost.
 
-rvm all rake benchmark
+    [[ruby]]
 
-----
-
-ruby 1.9.2p180 (2011-02-18 revision 30909) [x86_64-linux]
-Encoding  6.620000   0.010000   6.630000 (  6.636774)
-Decoding  2.660000   0.000000   2.660000 (  2.662709)
-
-ruby 1.8.7 (2011-02-18 patchlevel 334) [x86_64-linux]
-Encoding 10.660000   0.070000  10.730000 ( 10.764171)
-Decoding  4.270000   0.020000   4.290000 (  4.293326)
-
-jruby 1.6.2 (ruby-1.8.7-p330) (2011-05-23 e2ea975)
-(OpenJDK 64-Bit Server VM 1.6.0_22) [linux-amd64-java]
-Encoding  5.090000   0.000000   5.090000 (  5.090000)
-Decoding  1.763000   0.000000   1.763000 (  1.763000)
+    def entity_regexp
+      key_lengths = @map.keys.map{ |k| k.length }
+      entity_name_pattern =
+        if @flavor == 'expanded'
+          '(?:b\.)?[a-z][a-z0-9]'
+        else
+          '[a-z][a-z0-9]'
+        end
+      /&(?:(#{entity_name_pattern}{#{key_lengths.min - 1},#{key_lengths.max - 1}})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
+    end
 
 ----
 
-"It would be nice, however, if the decode function had a way to ignore certain common codes. For example, let's say you wanted to decode everything except the ampersand code (&amp;)."
+Which becomes something like this, which makes the decode method make sense:
+
+    [[ruby]]
+
+    /&(?:([a-z][a-z0-9]{1,7})|#([0-9]{1,7})|#x([0-9a-f]{1,6}));/i
+
+    def decode(source)
+      prepare(source).gsub(@entity_regexp) {
+        if $1 && codepoint = @map[$1]
+          [codepoint].pack('U')
+        elsif $2
+          [$2.to_i(10)].pack('U')
+        elsif $3
+          [$3.to_i(16)].pack('U')
+        else
+          $&
+        end
+      }
+    end
 
 ----
 
-"First of all I would like to thank you for this awesome gem. But I found a bug while trying to sanitize a string that has both valid and invalid chars."
+Encoding is probably less useful: you should be using unicode instead. Techniques might be interesting
+
+~ inverse of decoding. Basic entities are encoded first, then the rest. No overlap so safe.
+
+    [[ruby]]
+
+    def encode(source)
+      prepare(source).
+        gsub(basic_entity_regexp){ encode_basic($&) }.
+        gsub(extended_entity_regexp){ encode_extended($&) }
+    end
 
 ----
 
-[[ruby]]
+Basic entity regexp is the basic stuff with the complication that ' is not in HTML4. Not sure why I used case.
 
-coder = HTMLEntities.new
-string = "> Car &amp; Bike <"
-new = coder.encode(string)
-# BUG =>  "&gt; Car &amp;amp; Bike &lt;"
-worst_then_new = coder.encode(new)
-# BUG => "&amp;gt; Car &amp;amp;amp; Bike &amp;lt;"
+    [[ruby]]
+
+    def basic_entity_regexp
+      @basic_entity_regexp ||= (
+        case @flavor
+        when /^html/
+          /[<>"&]/
+        else
+          /[<>'"&]/
+        end
+      )
+    end
 
 ----
 
-"On two occasions I have been asked, 'Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?' I am not able rightly to apprehend the kind of confusion of ideas that could provoke such a question."
+Extended regexp mops up anything that's not printable ASCII. Note difference 1.8/1.9.
+
+    [[ruby]]
+
+    def extended_entity_regexp
+      @extended_entity_regexp ||= (
+        options = [nil]
+        if encoding_aware?
+          pattern = '[^\u{20}-\u{7E}]'
+        else
+          pattern = '[^\x20-\x7E]'
+          options << "U"
+        end
+        pattern << "|'" if @flavor == 'html4'
+        Regexp.new(pattern, *options)
+      )
+    end
+
+----
+
+encode_basic and encode_extended are used in every turn of the gsub loop, so we speed things up by dynamically generating methods for this encoding session that bake in the decision logic. Significant speed up.
+
+    [[ruby]]
+
+    def build_basic_entity_encoder(instructions)
+      if instructions.include?(:basic) || instructions.include?(:named)
+        method = :encode_named
+      elsif instructions.include?(:decimal)
+        method = :encode_decimal
+      elsif instructions.include?(:hexadecimal)
+        method = :encode_hexadecimal
+      end
+      instance_eval "def encode_basic(char)\n#{method}(char)\nend"
+    end
+
+----
+
+    [[ruby]]
+
+    def build_extended_entity_encoder(instructions)
+      definition = "def encode_extended(char)\n"
+      ([:named, :decimal, :hexadecimal] & instructions).each do |encoder|
+        definition << "encoded = encode_#{encoder}(char)\n"
+        definition << "return encoded if encoded\n"
+      end
+      definition << "char\n"
+      definition << "end"
+      instance_eval definition
+    end
+
+----
+
+Encoding itself is pretty simple. Reverse map generated using Hash#invert
+
+    [[ruby]]
+
+    def encode_named(char)
+      cp = char.unpack('U')[0]
+      (e = reverse_map[cp]) && "&#{e};"
+    end
+
+    def encode_decimal(char)
+      "&##{char.unpack('U')[0]};"
+    end
+
+    def encode_hexadecimal(char)
+      "&#x#{char.unpack('U')[0].to_s(16)};"
+    end
+
+----
+
+Testing and benchmarking are important. Support 1.8, 1.9, JRuby.
+
+* Use RVM to run over multiple interpreters: `rvm all rake …`
+* Warm up before measuring (JRuby)
+
+    rvm all rake test
+
+    rvm all rake benchmark
+
+----
+
+Encode & decode 34kb file of random codepoints 100 times
+
+    ruby 1.9.2p180 (2011-02-18 revision 30909) [x86_64-linux]
+    Encoding  6.620000   0.010000   6.630000 (  6.636774)
+    Decoding  2.660000   0.000000   2.660000 (  2.662709)
+
+    ruby 1.8.7 (2011-02-18 patchlevel 334) [x86_64-linux]
+    Encoding 10.660000   0.070000  10.730000 ( 10.764171)
+    Decoding  4.270000   0.020000   4.290000 (  4.293326)
+
+    jruby 1.6.2 (ruby-1.8.7-p330) (2011-05-23 e2ea975)
+    (OpenJDK 64-Bit Server VM 1.6.0_22) [linux-amd64-java]
+    Encoding  5.090000   0.000000   5.090000 (  5.090000)
+    Decoding  1.763000   0.000000   1.763000 (  1.763000)
+
+----
+
+Things I've learned: resist expansion
+
+    "It would be nice, however, if the decode function had a way to ignore certain common codes. For example, let's say you wanted to decode everything except the ampersand code (&amp;)."
+
+A reasonable if unusual requirement. Showed a solution.
+
+----
+
+    "First of all I would like to thank you for this awesome gem. But I found a bug while trying to sanitize a string that has both valid and invalid chars."
+
+----
+
+    [[ruby]]
+
+    coder = HTMLEntities.new
+    string = "> Car &amp; Bike <"
+    new = coder.encode(string)
+    # BUG =>  "&gt; Car &amp;amp; Bike &lt;"
+    worst_then_new = coder.encode(new)
+    # BUG => "&amp;gt; Car &amp;amp;amp; Bike &amp;lt;"
+
+----
+
+    NOTABUG
+
+----
+
+    "On two occasions I have been asked, 'Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?' I am not able rightly to apprehend the kind of confusion of ideas that could provoke such a question."

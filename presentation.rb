@@ -1,7 +1,9 @@
 require "json"
 pages = []
 
-$stdin.read.strip.split(/^-{4,}/).each do |page|
+$stdin.read.split(/^-{4,}/).each do |page|
+  page.gsub!(/^\S.*/, "")
+  page.gsub!(/^    /, "")
   mode = ""
   page.gsub!(/^\[\[(.+?)\]\]/){
     mode = "sh_" + $1
