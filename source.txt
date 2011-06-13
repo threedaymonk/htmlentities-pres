@@ -124,6 +124,8 @@ Even though it's 6 years old, and simple, it still manages to be buggy. Writing 
 
 Do one thing and do it well -> do one thing and keep trying until you can do it adequately. Keep adding tests every time something goes wrong.
 
+I generate the list of entities automatically from the DTD to avoid data entry errors. DTD looks like XML but isn't.
+
 ----
 
 Here's what decoding looks like now. Decoder class instantiated for each conversion. Main method is decode:
@@ -361,3 +363,7 @@ A reasonable if unusual requirement. Showed a solution.
 ----
 
     "On two occasions I have been asked, 'Pray, Mr. Babbage, if you put into the machine wrong figures, will the right answers come out?' I am not able rightly to apprehend the kind of confusion of ideas that could provoke such a question."
+
+----
+
+    thank you
