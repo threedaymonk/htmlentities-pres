@@ -256,7 +256,7 @@ Extended regexp mops up anything that's not printable ASCII. Note difference 1.8
 
 ----
 
-encode_basic and encode_extended are used in every turn of the gsub loop, so we speed things up by dynamically generating methods for this encoding session that bake in the decision logic. Significant speed up.
+regexps are used only once, but encode_basic and encode_extended are used in every turn of the gsub loop, so we speed things up by dynamically generating methods for this encoding session that bake in the decision logic. Significant speed up.
 
     [[ruby]]
 
